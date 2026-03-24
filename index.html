@@ -125,10 +125,6 @@
   <script>
     const BASE_ID = "14lgGw3P8vvEgQARTQokRgZ985daZ90D";
     const TABLE_ID = "wL5R6dw";
-    const FIELD_ID_NAME = "X3OFzEy";
-
-    // ⚠️ 注意：此 Token 仅为个人使用，不可公开分享
-    const ACCESS_TOKEN = "30f0a8e5df7c31a4a1beafa112b47c2f";
 
     function showMsg(text, type) {
       const el = document.getElementById("msg");
@@ -172,7 +168,7 @@
         const submitTime = formatTime();
         const records = [{
           fields: {
-            "标题": { "text": name },
+            "标题": name,
             "姓名": name,
             "提交时间": submitTime
           }
@@ -192,31 +188,10 @@
         const recordData = await recordRes.json();
 
         if (recordData.code) {
-          // 可能是 "提交时间" 字段不存在，先去掉试试
-          const retryRecords = [{
-            fields: {
-              "标题": { "text": name },
-              "姓名": name
-            }
-          }];
-          const retryRes = await fetch(
-            `https://api.dingtalk.com/v2/bitable/app/${BASE_ID}/tables/${TABLE_ID}/records`,
-            {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                "x-acs-dingtalk-access-token": v2Token
-              },
-              body: JSON.stringify({ records: retryRecords })
-            }
-          );
-          const retryData = await retryRes.json();
-          if (retryData.code) throw new Error(retryData.message || "提交失败");
-          showMsg("✅ 提交成功！", "ok");
-        } else {
-          showMsg("✅ 提交成功！", "ok");
-          document.getElementById("name").value = "";
+          throw new Error(recordData.message || "提交失败");
         }
+        showMsg("✅ 提交成功！", "ok");
+        document.getElementById("name").value = "";
 
       } catch (err) {
         showMsg("❌ 提交失败：" + err.message, "err");
