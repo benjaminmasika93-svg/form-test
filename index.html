@@ -26,82 +26,37 @@
       box-shadow: 0 2px 20px rgba(0,0,0,0.06);
     }
 
-    .card-title {
-      font-size: 1.3rem;
-      font-weight: 600;
-      color: #1a1a1a;
-      margin-bottom: 6px;
-    }
-
-    .card-desc {
-      font-size: 0.82rem;
-      color: #999;
-      margin-bottom: 28px;
-    }
-
-    label {
-      display: block;
-      font-size: 0.82rem;
-      color: #666;
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
+    .card-title { font-size: 1.3rem; font-weight: 600; color: #1a1a1a; margin-bottom: 6px; }
+    .card-desc { font-size: 0.82rem; color: #999; margin-bottom: 28px; }
+    label { display: block; font-size: 0.82rem; color: #666; margin-bottom: 8px; font-weight: 500; }
 
     input[type="text"] {
-      width: 100%;
-      padding: 12px 16px;
-      border: 1.5px solid #e0ddd8;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-family: inherit;
-      color: #1a1a1a;
-      background: #fafaf8;
-      outline: none;
+      width: 100%; padding: 12px 16px;
+      border: 1.5px solid #e0ddd8; border-radius: 10px;
+      font-size: 1rem; font-family: inherit; color: #1a1a1a;
+      background: #fafaf8; outline: none;
       transition: border-color 0.2s, background 0.2s;
       margin-bottom: 20px;
     }
-
-    input[type="text"]:focus {
-      border-color: #b8956a;
-      background: #fff;
-    }
+    input[type="text"]:focus { border-color: #b8956a; background: #fff; }
 
     .btn {
-      width: 100%;
-      background: #b8956a;
-      color: #fff;
-      border: none;
-      padding: 14px;
-      border-radius: 10px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
+      width: 100%; background: #b8956a; color: #fff;
+      border: none; padding: 14px; border-radius: 10px;
+      font-size: 1rem; font-weight: 600; cursor: pointer;
       letter-spacing: 0.08em;
       transition: background 0.2s, transform 0.1s;
     }
-
     .btn:hover { background: #a07d55; }
     .btn:active { transform: scale(0.98); }
     .btn:disabled { background: #ccc; cursor: not-allowed; }
 
-    .msg {
-      margin-top: 16px;
-      padding: 12px 16px;
-      border-radius: 8px;
-      font-size: 0.85rem;
-      text-align: center;
-      display: none;
-    }
+    .msg { margin-top: 16px; padding: 12px 16px; border-radius: 8px; font-size: 0.85rem; text-align: center; display: none; }
     .msg.ok { background: #e8f5e3; color: #2e7d32; display: block; }
     .msg.err { background: #fde8e8; color: #c62828; display: block; }
     .msg.loading { background: #fff8e6; color: #795548; display: block; }
 
-    .hint {
-      margin-top: 20px;
-      font-size: 0.72rem;
-      color: #bbb;
-      text-align: center;
-    }
+    .hint { margin-top: 20px; font-size: 0.72rem; color: #bbb; text-align: center; }
 
     @media (max-width: 480px) {
       .card { padding: 28px 20px; border-radius: 12px; }
@@ -111,7 +66,7 @@
 <body>
   <div class="card">
     <div class="card-title">📋 表单测试</div>
-    <div class="card-desc">提交后自动同步到钉钉 AI 表格</div>
+    <div class="card-desc">提交后自动保存到数据库</div>
 
     <label for="name">姓名</label>
     <input type="text" id="name" placeholder="请输入姓名" maxlength="50" autocomplete="off" />
@@ -119,12 +74,12 @@
     <button class="btn" id="submitBtn" onclick="handleSubmit()">提交</button>
 
     <div class="msg" id="msg"></div>
-    <div class="hint">数据将直接写入钉钉多维表格</div>
+    <div class="hint">数据将写入 Supabase 数据库</div>
   </div>
 
   <script>
-    const BASE_ID = "14lgGw3P8vvEgQARTQokRgZ985daZ90D";
-    const TABLE_ID = "wL5R6dw";
+    const SUPABASE_URL = "https://bxyynnrueauinsqjcdiz.supabase.co";
+    const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ4eXlubnJ1ZWF1aW5zcWpjZGl6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQzNjAzMDksImV4cCI6MjA4OTkzNjMwOX0.RiHuJdDjlLCJAGAuarLwrSEDTJkLarDbHVsUe4ImJo0";
 
     function showMsg(text, type) {
       const el = document.getElementById("msg");
@@ -132,18 +87,9 @@
       el.className = "msg " + type;
     }
 
-    function formatTime() {
-      const d = new Date();
-      const pad = n => String(n).padStart(2, "0");
-      return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`;
-    }
-
     async function handleSubmit() {
       const name = document.getElementById("name").value.trim();
-      if (!name) {
-        showMsg("请输入姓名", "err");
-        return;
-      }
+      if (!name) { showMsg("请输入姓名", "err"); return; }
 
       const btn = document.getElementById("submitBtn");
       btn.disabled = true;
@@ -151,57 +97,30 @@
       showMsg("正在提交...", "loading");
 
       try {
-        // Step 1: 获取 v2 token（写表需要用新版 API）
-        const tokenRes = await fetch("https://api.dingtalk.com/v1.0/oauth2/accessToken", {
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/form_submissions`, {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            appKey: "dingots6iqruvtsmdowa",
-            appSecret: "FSvaj3LEVtH-mIxtdvCts1hUS4i4sym1uBUOwcdAzd2cXC4d0_7wfKB-KjsxaPPm"
-          })
+          headers: {
+            "apikey": ANON_KEY,
+            "Authorization": `Bearer ${ANON_KEY}`,
+            "Content-Type": "application/json",
+            "Prefer": "return=representation"
+          },
+          body: JSON.stringify({ name })
         });
-        const tokenData = await tokenRes.json();
-        const v2Token = tokenData.accessToken;
-        if (!v2Token) throw new Error("获取 Token 失败");
 
-        // Step 2: 写入记录
-        const submitTime = formatTime();
-        const records = [{
-          fields: {
-            "标题": name,
-            "姓名": name,
-            "提交时间": submitTime
-          }
-        }];
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || data.error?.message || "提交失败");
 
-        const recordRes = await fetch(
-          `https://api.dingtalk.com/v2/bitable/app/${BASE_ID}/tables/${TABLE_ID}/records`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-acs-dingtalk-access-token": v2Token
-            },
-            body: JSON.stringify({ records })
-          }
-        );
-        const recordData = await recordRes.json();
-
-        if (recordData.code) {
-          throw new Error(recordData.message || "提交失败");
-        }
         showMsg("✅ 提交成功！", "ok");
         document.getElementById("name").value = "";
-
       } catch (err) {
-        showMsg("❌ 提交失败：" + err.message, "err");
+        showMsg("❌ " + err.message, "err");
       } finally {
         btn.disabled = false;
         btn.textContent = "提交";
       }
     }
 
-    // 回车也能提交
     document.getElementById("name").addEventListener("keydown", e => {
       if (e.key === "Enter") handleSubmit();
     });
